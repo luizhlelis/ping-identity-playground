@@ -29,7 +29,7 @@ When asked for the username and password, enter the following:
 
 ```
 username: administrator
-password: 2FederateM0re   
+password: 2FederateM0re
 ```
 
 To open the `PingAccess` locally, open the following URL in your browser:
@@ -62,3 +62,17 @@ password: 2FederateM0re
 ## Creating a new OIDC application
 
 Follow [this stpes](https://docs.pingidentity.com/bundle/solution-guides/page/ywg1598030491145.html) to create a new OIDC application in `PingFederate`.
+
+## Creating a new self-signed certificate
+
+All `PingIdentity` products require https connections, when the `PingFederate` container is running locally, it creates for you a new certificate to secure the `pingfederate` hostname. Running inside the docker network, you'll not face any ssl problems, different from running a client locally pointing to `localhost`. In that case, you need to create a self-signed certificate, for that, follow the steps mentioned in [this article](https://docs.pingidentity.com/bundle/pingfederate-93/page/yij1564002984865.html). It's important to fill the fields `COMMON NAME` and `SUBJECT ALTERNATIVE NAMES` with the `localhost` hostname:
+
+![certs](./assets/certs.png)
+
+After created, trust that certificate in your local key chain:
+
+[Mac Os](https://tosbourn.com/getting-os-x-to-trust-self-signed-ssl-certificates/)
+
+[Windows](https://superuser.com/questions/370217/trust-ssl-certificate-to-local-system-account)
+
+[Linux](https://unix.stackexchange.com/questions/90450/adding-a-self-signed-certificate-to-the-trusted-list)
