@@ -272,3 +272,6 @@ __pycache__/
 **/coverage.opencover.xml
 
 .vscode/
+
+#  MacOs Files
+.DS_Store
