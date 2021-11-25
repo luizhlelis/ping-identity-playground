@@ -42,7 +42,7 @@ When asked for the username and password, enter the following:
 
 ```
 username: administrator
-password: 2FederateM0re   
+password: 2FederateM0re
 ```
 
 Finally, to open the `PingDataConsole` (PingData Administrative Console) locally, open the following URL in your browser:
