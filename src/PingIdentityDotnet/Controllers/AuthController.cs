@@ -30,7 +30,7 @@ namespace PingIdentityDotnet.Controllers
         {
             await HttpContext
                 .ChallengeAsync(
-                    "PingIdentity",
+                    "oidc",
                     new AuthenticationProperties() { RedirectUri = _configuration["AuthorizationServer:RedirectUri"] }
                 );
         }
@@ -52,7 +52,7 @@ namespace PingIdentityDotnet.Controllers
         [HttpGet("logout")]
         public async Task Logout()
         {
-            await HttpContext.SignOutAsync("PingIdentity", new AuthenticationProperties
+            await HttpContext.SignOutAsync("oidc", new AuthenticationProperties
             {
                 // Indicate here where PingIdentity should redirect the user after a logout.
                 // Note that the resulting absolute Uri must be whitelisted in the 

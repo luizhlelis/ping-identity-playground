@@ -9,6 +9,14 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Options;
+using IdentityModel.AspNetCore.AccessTokenManagement;
+using System;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using System.Threading.Tasks;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace PingIdentityDotnet
 {
@@ -24,6 +32,15 @@ namespace PingIdentityDotnet
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHttpClient("client")
+                .AddHttpMessageHandler<UserAccessTokenHandler>();
+
+            services.AddAccessTokenManagement()
+                .ConfigureBackchannelHttpClient(client =>
+                {
+                    client.Timeout = TimeSpan.FromSeconds(30);
+                });
+
             services.AddControllers();
             services.AddApiVersioning(options => {
                 options.ReportApiVersions = true;
@@ -53,20 +70,51 @@ namespace PingIdentityDotnet
             services.ConfigureSameSiteNoneCookies();
 
             // Add authentication services
-            //var issuer = "https://localhost:9031";
-            //var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
-            //    issuer + "/.well-known/oauth-authorization-server",
-            //    new OpenIdConnectConfigurationRetriever(),
-            //    new HttpDocumentRetriever()
-            //);
 
             services.AddAuthentication(options =>
             {
-                options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultScheme = "cookies";
+                options.DefaultChallengeScheme = "oidc";
             })
-            .AddCookie();
+            .AddCookie("cookies", options =>
+            {
+                options.AccessDeniedPath = "/account/denied";
+            })
+            .AddOpenIdConnect("oidc", options =>
+            {
+                options.Authority = Configuration["AuthorizationServer:Authority"];
+                options.ClientId = Configuration["AuthorizationServer:ClientId"];
+                options.ClientSecret = Configuration["AuthorizationServer:ClientSecret"];
+                options.ResponseType = OpenIdConnectResponseType.Code;
+
+                // Also ensure that you have added the URL as an Allowed Callback URL in your PingFederate client
+                options.CallbackPath = new PathString("/v1/auth/response-oidc");
+
+                options.SaveTokens = true;
+                options.GetClaimsFromUserInfoEndpoint = true;
+
+                options.Scope.Clear();
+                options.Scope.Add("openid");
+                options.Scope.Add("profile");
+                options.Scope.Add("email");
+
+                options.ClaimActions.MapAllExcept("iss", "nbf", "exp", "aud", "nonce", "iat", "c_hash");
+
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    NameClaimType = "name",
+                    RoleClaimType = "role"
+                };
+
+                options.Events = new OpenIdConnectEvents
+                {
+                    OnAuthorizationCodeReceived = (context) =>
+                    {
+                        Console.WriteLine(context.JwtSecurityToken);
+                        return Task.CompletedTask;
+                    }
+                };
+            });
 
             // Add framework services.
             services.AddControllersWithViews();
