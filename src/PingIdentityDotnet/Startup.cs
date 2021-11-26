@@ -87,16 +87,17 @@ namespace PingIdentityDotnet
                 options.ClientSecret = Configuration["AuthorizationServer:ClientSecret"];
                 options.ResponseType = OpenIdConnectResponseType.Code;
 
-                // Also ensure that you have added the URL as an Allowed Callback URL in your PingFederate client
-                options.CallbackPath = new PathString("/v1/auth/response-oidc");
+                // Also ensure that you have added the URL as an Allowed Callback URL in PingFederate
+                options.CallbackPath = new PathString(Configuration["AuthorizationServer:CallbackPath"]);
 
                 options.SaveTokens = true;
                 options.GetClaimsFromUserInfoEndpoint = true;
 
+                // Configure the scope
                 options.Scope.Clear();
-                options.Scope.Add("openid");
-                options.Scope.Add("profile");
-                options.Scope.Add("email");
+                var scopeArray = Configuration["AuthorizationServer:Scopes"].Split(',');
+                foreach (var scope in scopeArray)
+                    options.Scope.Add(scope);
 
                 options.ClaimActions.MapAllExcept("iss", "nbf", "exp", "aud", "nonce", "iat", "c_hash");
 
