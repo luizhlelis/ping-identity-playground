@@ -18,7 +18,7 @@ version: "2.4"
 #-   +-----------------------+--------------------------------------------------------+
 #-   |  PingAccess           |  https://localhost:9000/                               |
 #-   |  PingFederate         |  https://localhost:9999/pingfederate/app               |
-#-   |  PingDirectory        |  https://localhost:8443/   (Server=pingdirectory)      |
+#-   |  PingDirectory        |  https://localhost:8443/  (Server=pingdirectory:1636)  |
 #-   +-----------------------+--------------------------------------------------------+
 #--------------------------------------------------------------------------------------
 
